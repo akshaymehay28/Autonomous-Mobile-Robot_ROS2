@@ -1,0 +1,12 @@
+occupancy_grid_mapper:
+  ros__parameters:
+    map_resolution: 0.1      # metres per cell (10cm, same as Lab 6)
+    map_width: 120            # cells (12m total width)
+    map_height: 120           # cells (12m total height)
+    map_origin_x: -6.0        # world X of bottom-left corner
+    map_origin_y: -6.0        # world Y of bottom-left corner
+    publish_rate: 1.0         # Hz
+    log_odds_occupied: 0.85   # confidence increment for hits
+    log_odds_free: -0.4       # confidence increment for misses
+    log_odds_max: 5.0         # maximum log-odds clamp
+    log_odds_min: -5.0        # minimum log-odds clamp
