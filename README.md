@@ -11,7 +11,12 @@ ros2 launch ntu_robotsim occupancy_grid_mapping.launch.py
 
 source ~/ros2_ws/install/setup.bash
 
+source ~/ros2_ws/install/setup.bash
+ros2 launch ntu_robotsim object_detection.launch.py \
+    model:=$HOME/ros2_ws/custom_models/best.pt
+
 ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r /cmd_vel:=/atlas/cmd_vel
+
 
 source ~/ros2_ws/install/setup.bash
 
