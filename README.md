@@ -24,4 +24,4 @@ terminal 6
 source ~/ros2_ws/install/setup.bash
 rviz2
 
-In RViz: set Fixed Frame to map, add Map on /projected_map (Reliable, Transient Local), add MarkerArray on /occupied_cells_vis_array, add Image on /yolo/dbg_image.
+In RViz: set Fixed Frame to map, add Map on /projected_map, add MarkerArray on /occupied_cells_vis_array, add Image on /yolo/dbg_image.
