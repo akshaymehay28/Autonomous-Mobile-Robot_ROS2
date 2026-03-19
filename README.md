@@ -25,3 +25,33 @@ source ~/ros2_ws/install/setup.bash
 rviz2
 
 In RViz: set Fixed Frame to map, add Map on /projected_map, add MarkerArray on /occupied_cells_vis_array, add Image on /yolo/dbg_image.
+
+------------------------------------------------------------------------------------------
+Terminal 1
+ros2 launch ntu_robotsim cwmaze.launch.py
+
+Terminal 2
+ros2 launch ntu_robotsim single_robot_sim.launch.py
+
+
+Terminal 3
+source ~/ros2_ws/install/setup.bash
+ros2 launch ntu_robotsim occupancy_grid_mapping.launch.py
+
+
+
+Terminal 4
+
+source ~/ros2_ws/install/setup.bash
+ros2 launch ntu_robotsim traffic_rules.launch.py model:=/home/ntu-user/ros2_ws/src/cognitive_groupwork/custom_models/bes
+
+
+
+Terminal 5
+
+ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r /cmd_vel:=/manual_cmd_vel
+
+
+Terminal 6
+source ~/ros2_ws/install/setup.bash
+rviz2
