@@ -5,7 +5,7 @@ Requirement 7: Landmark Database
 This node subscribes to YOLO detections and robot odometry to build
 a persistent landmark database. It:
 
-- Tracks counts of detected objects (oranges, trees, cars/vehicles)
+- Tracks the highest count of detected objects (oranges, trees, cars/vehicles)
 - Logs a summary to object_log.log (one line per class, continuously updated)
 - Persists the landmark database to a YAML file
 - Publishes landmark database status on a ROS2 topic
@@ -65,7 +65,7 @@ class LandmarkDatabase(Node):
         self.track_all_classes = bool(self.get_parameter('track_all_classes').value)
 
         # ── State ───────────────────────────────────────────────
-        # Counts per class
+        # Highest count ever seen per class
         self.object_counts: Dict[str, int] = {}
         # Last time we logged a detection for each class (to avoid spamming)
         self.last_log_time: Dict[str, float] = {}
@@ -135,8 +135,10 @@ class LandmarkDatabase(Node):
 
         # Update counts and log for each detected class
         for class_name, count in frame_counts.items():
-            # Store the count from this frame (how many visible right now)
-            self.object_counts[class_name] = count
+            # Store the highest count seen for this class
+            self.object_counts[class_name] = max(
+                self.object_counts.get(class_name, 0), count
+            )
 
             # Cooldown check — avoid writing the same class every frame
             last_time = self.last_log_time.get(class_name, 0.0)
