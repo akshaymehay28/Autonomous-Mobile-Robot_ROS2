@@ -16,6 +16,8 @@ install(DIRECTORY
 # Install Python scripts as executable nodes
 install(PROGRAMS
   scripts/occupancy_grid_mapper.py
+  scripts/traffic_sign_controller.py
+  scripts/landmark_database.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
