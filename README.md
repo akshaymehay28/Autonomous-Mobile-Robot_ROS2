@@ -33,25 +33,25 @@ ros2 launch ntu_robotsim cwmaze.launch.py
 Terminal 2
 ros2 launch ntu_robotsim single_robot_sim.launch.py
 
-
 Terminal 3
 source ~/ros2_ws/install/setup.bash
 ros2 launch ntu_robotsim occupancy_grid_mapping.launch.py
 
-
-
 Terminal 4
-
 source ~/ros2_ws/install/setup.bash
-ros2 launch ntu_robotsim traffic_rules.launch.py model:=/home/ntu-user/ros2_ws/src/cognitive_groupwork/custom_models/bes
-
-
+ros2 launch ntu_robotsim traffic_rules.launch.py model:=/home/ntu-user/ros2_ws/src/cognitive_groupwork/custom_models/best.pt
 
 Terminal 5
-
 ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r /cmd_vel:=/manual_cmd_vel
-
 
 Terminal 6
 source ~/ros2_ws/install/setup.bash
 rviz2
+
+Terminal 7 (Requirement 7)
+source ~/ros2_ws/install/setup.bash
+ros2 run ntu_robotsim landmark_database.py --ros-args \
+    -p detections_topic:=/yolo/detections \
+    -p odom_topic:=/atlas/odom_ground_truth \
+    -p log_file:=object_log.log \
+    -p yaml_file:=landmark_database.yaml
