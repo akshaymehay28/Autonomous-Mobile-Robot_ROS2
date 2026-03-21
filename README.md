@@ -25,19 +25,23 @@ source ~/ros2_ws/install/setup.bash
 rviz2
 
 Terminal 7 (Task 4 - Goal Position Detection):
+
 source ~/ros2_ws/install/setup.bash
 ros2 launch goal_publisher goal_publisher.launch.py
 
 Note on Task 4:
+
 - With teleop (Terminal 5), drive the robot near each landmark in order: orange, tree, vehicle, stop sign. Which also builds the occupancy map before launching navigation
 - Terminal 7 will confirm each position is recorded with coordinates
 - Once all 4 landmarks are recorded, drive the robot back to the starting position
 
 Terminal 8 (Task 6 - Autonomous Navigation):
+
 source ~/ros2_ws/install/setup.bash
 ros2 launch nav2_navigator nav2_navigator.launch.py
 
 Note on Task 6:
+
 - Launch Terminal 8 after all landmarks are detected and robot is at start
 - The robot will automatically navigate to each landmark in sequence
 - Nav2 installation is required
