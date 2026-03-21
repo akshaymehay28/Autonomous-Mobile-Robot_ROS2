@@ -55,3 +55,6 @@ ros2 run ntu_robotsim landmark_database.py --ros-args \
     -p odom_topic:=/atlas/odom_ground_truth \
     -p log_file:=object_log.log \
     -p yaml_file:=landmark_database.yaml
+
+Terminal 8 (Testing Requirement 7)
+cat ~/ros2_ws/object_log.log
