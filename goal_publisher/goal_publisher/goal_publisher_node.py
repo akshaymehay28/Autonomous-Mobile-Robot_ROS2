@@ -2,9 +2,10 @@ import rclpy
 from rclpy.node import Node
 from yolo_msgs.msg import DetectionArray
 from sensor_msgs.msg import PointCloud2
-from geometry_msgs.msg import PoseStamped, PointStamped
-from tf2_ros import Buffer, TransformListener, TransformException
-import tf2_geometry_msgs
+from geometry_msgs.msg import PoseStamped
+from std_msgs.msg import Bool
+from nav_msgs.msg import Odometry
+from tf2_ros import Buffer, TransformListener
 import numpy as np
 import struct
 
@@ -13,137 +14,102 @@ class GoalPublisherNode(Node):
         super().__init__('goal_publisher_node')
 
         self.goal_sequence = ['orange', 'tree', 'vehicle', 'stop_sign']
-        self.current_goal_index = 0
-        self.map_frame = 'map'
+        self.detected_goals = {}
+        self.current_target_index = 0
+        self.nav2_goal_index = 0
+        self.all_goals_found = False
+        self.first_goal_published = False
+        self.robot_pose = None
 
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
-        self.point_cloud_data = None
 
         self.detection_subscriber = self.create_subscription(
-            DetectionArray,
-            '/yolo/tracking',
-            self.detection_callback,
-            10)
+            DetectionArray, '/yolo/tracking', self.detection_callback, 10)
 
-        self.pointcloud_subscriber = self.create_subscription(
-            PointCloud2,
-            '/atlas/rgbd_camera/points',
-            self.pointcloud_callback,
-            10)
+        self.odom_subscriber = self.create_subscription(
+            Odometry, '/atlas/odom_ground_truth', self.odom_callback, 10)
 
-        self.goal_publisher = self.create_publisher(
-            PoseStamped,
-            '/goal_pose',
-            10)
+        self.goal_publisher = self.create_publisher(PoseStamped, '/goal_pose', 10)
 
-        self.get_logger().info(f'Goal detection ready. Looking for: {self.goal_sequence[0]}')
+        self.goal_reached_subscriber = self.create_subscription(
+            Bool, '/goal_reached', self.goal_reached_callback, 10)
 
-    def pointcloud_callback(self, msg):
-        self.point_cloud_data = msg
+        self.nav2_check_timer = self.create_timer(2.0, self.check_nav2)
+
+        self.get_logger().info(f'Ready. Drive near each landmark in order: {self.goal_sequence}')
+
+    def odom_callback(self, msg):
+        self.robot_pose = msg.pose.pose
+
+    def check_nav2(self):
+        if self.first_goal_published or not self.all_goals_found:
+            return
+        service_names = [s[0] for s in self.get_service_names_and_types()]
+        if any('navigate_to_pose' in s for s in service_names):
+            self.get_logger().info('Navigation system ready. Starting in 5 seconds...')
+            self.create_timer(5.0, self.publish_first_goal_once)
+        else:
+            self.get_logger().info('Waiting for navigation system...', throttle_duration_sec=4.0)
+
+    def publish_first_goal_once(self):
+        if not self.first_goal_published:
+            self.first_goal_published = True
+            self.publish_next_goal()
+
+    def goal_reached_callback(self, msg):
+        if msg.data:
+            self.nav2_goal_index += 1
+            if self.nav2_goal_index < len(self.goal_sequence):
+                self.get_logger().info(f'Reached destination. Moving to: {self.goal_sequence[self.nav2_goal_index]}')
+                self.publish_next_goal()
+            else:
+                self.get_logger().info('Maze complete. All destinations visited.')
 
     def detection_callback(self, msg):
-        if self.current_goal_index >= len(self.goal_sequence):
+        if self.all_goals_found or self.robot_pose is None:
+            return
+        if self.current_target_index >= len(self.goal_sequence):
             return
 
-        if self.point_cloud_data is None:
-            return
-
-        current_target = self.goal_sequence[self.current_goal_index]
+        current_target = self.goal_sequence[self.current_target_index]
 
         for detection in msg.detections:
             if detection.class_name == current_target:
-                center_x = int(detection.bbox.center.position.x)
-                center_y = int(detection.bbox.center.position.y)
-                bbox_w = int(detection.bbox.size.x)
-                bbox_h = int(detection.bbox.size.y)
+                goal_pose = PoseStamped()
+                goal_pose.header.frame_id = 'map'
+                goal_pose.header.stamp = self.get_clock().now().to_msg()
+                goal_pose.pose.position.x = self.robot_pose.position.x
+                goal_pose.pose.position.y = self.robot_pose.position.y
+                goal_pose.pose.position.z = 0.0
+                goal_pose.pose.orientation = self.robot_pose.orientation
 
-                point_3d = self.get_3d_point_bbox(center_x, center_y, bbox_w, bbox_h)
-                if point_3d is None:
-                    continue
+                self.detected_goals[current_target] = goal_pose
+                self.current_target_index += 1
 
-                self.publish_goal(point_3d, msg.header, current_target)
+                self.get_logger().info(
+                    f'Landmark {self.current_target_index}/{len(self.goal_sequence)} recorded: '
+                    f'{current_target} at [{goal_pose.pose.position.x:.2f}, {goal_pose.pose.position.y:.2f}]'
+                )
+
+                if self.current_target_index < len(self.goal_sequence):
+                    self.get_logger().info(f'Next landmark: {self.goal_sequence[self.current_target_index]}')
+                else:
+                    self.all_goals_found = True
+                    self.get_logger().info('All landmarks recorded. Return to start and launch navigation.')
                 return
 
-    def get_point_at(self, x, y):
-        pc = self.point_cloud_data
-        if x < 0 or y < 0 or x >= pc.width or y >= pc.height:
-            return None
-        offset = y * pc.row_step + x * pc.point_step
-        try:
-            px, py, pz = struct.unpack_from('fff', bytes(pc.data), offset)
-            if not (np.isnan(px) or np.isnan(py) or np.isnan(pz)) and pz > 0:
-                return (px, py, pz)
-        except Exception:
-            pass
-        return None
-
-    def get_3d_point_bbox(self, cx, cy, bw, bh):
-        width = self.point_cloud_data.width
-        height = self.point_cloud_data.height
-
-        x_start = max(0, cx - bw // 2)
-        x_end = min(width - 1, cx + bw // 2)
-        y_start = max(0, cy - bh // 2)
-        y_end = min(height - 1, cy + bh // 2)
-
-        valid_points = []
-        step = 10
-        for x in range(x_start, x_end, step):
-            for y in range(y_start, y_end, step):
-                pt = self.get_point_at(x, y)
-                if pt is not None:
-                    valid_points.append(pt)
-
-        if valid_points:
-            pts = np.array(valid_points)
-            return np.median(pts, axis=0)
-
-        return None
-
-    def publish_goal(self, point_3d, header, label):
-        try:
-            point_in_camera_frame = PointStamped()
-            point_in_camera_frame.header = header
-            point_in_camera_frame.point.x = float(point_3d[0])
-            point_in_camera_frame.point.y = float(point_3d[1])
-            point_in_camera_frame.point.z = float(point_3d[2])
-
-            if not self.tf_buffer.can_transform(self.map_frame, header.frame_id,
-                                                header.stamp,
-                                                rclpy.duration.Duration(seconds=0.5)):
-                return
-
-            transformed_point = self.tf_buffer.transform(
-                point_in_camera_frame, self.map_frame,
-                rclpy.duration.Duration(seconds=0.5))
-
-            goal_pose = PoseStamped()
-            goal_pose.header.frame_id = self.map_frame
-            goal_pose.header.stamp = self.get_clock().now().to_msg()
-            goal_pose.pose.position.x = transformed_point.point.x
-            goal_pose.pose.position.y = transformed_point.point.y
-            goal_pose.pose.position.z = 0.0
-            goal_pose.pose.orientation.w = 1.0
-
-            self.goal_publisher.publish(goal_pose)
-
-            self.get_logger().info(
-                f'Goal {self.current_goal_index + 1}/{len(self.goal_sequence)}: '
-                f'{label} detected at [{goal_pose.pose.position.x:.2f}, '
-                f'{goal_pose.pose.position.y:.2f}]'
-            )
-
-            self.current_goal_index += 1
-            if self.current_goal_index < len(self.goal_sequence):
-                self.get_logger().info(f'Next target: {self.goal_sequence[self.current_goal_index]}')
-            else:
-                self.get_logger().info('All goals reached. Sequence complete.')
-
-        except TransformException as e:
-            self.get_logger().error(f'Transform error: {e}')
-        except Exception as e:
-            self.get_logger().error(f'Error: {e}')
+    def publish_next_goal(self):
+        if self.nav2_goal_index >= len(self.goal_sequence):
+            return
+        label = self.goal_sequence[self.nav2_goal_index]
+        goal_pose = self.detected_goals[label]
+        goal_pose.header.stamp = self.get_clock().now().to_msg()
+        self.goal_publisher.publish(goal_pose)
+        self.get_logger().info(
+            f'Navigating to {label} [{self.nav2_goal_index + 1}/{len(self.goal_sequence)}] '
+            f'at [{goal_pose.pose.position.x:.2f}, {goal_pose.pose.position.y:.2f}]'
+        )
 
 
 def main(args=None):
