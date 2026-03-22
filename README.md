@@ -62,38 +62,38 @@ cat ~/ros2_ws/landmark_database.yaml
 ### Do NOT run this alongside the Requirement 1-8 terminals.
 ### Requirement 9 uses its own simulation session and its own TF frames.
 
-### Install RTABMAP-ROS
+## Install RTABMAP-ROS
 sudo apt install ros-humble-rtabmap-ros
 
-### Terminal 1a - Simulation world
+## Terminal 1a - Simulation world
 ros2 launch ntu_robotsim cwmaze.launch.py
 
-### Terminal 2a - Spawn robot
+## Terminal 2a - Spawn robot
 ros2 launch ntu_robotsim single_robot_sim.launch.py
 
-### Terminal 3a - Visual Odometry (RTAB-Map)
+## Terminal 3a - Visual Odometry (RTAB-Map)
 source ~/ros2_ws/install/setup.bash
 ros2 launch ntu_robotsim visual_odometry.launch.py
 
-### Terminal 4a - Teleop Control
+## Terminal 4a - Teleop Control
 ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r /cmd_vel:=/atlas/cmd_vel
 
-### Instructions:
+## Instructions:
 1. Launch Terminals 1a and 2a, wait for the robot to appear in Gazebo.
 2. Launch Terminal 3a — the RTAB-Map visualisation window will open showing the 3D map, odometry features, and loop closure panels.
 3. Launch Terminal 4a and drive the robot around the maze slowly.
 4. The RTAB-Map window shows real-time feature tracking, trajectory, and 3D point cloud.
 5. Terminal 3a prints VO vs ground-truth comparison every 2 seconds.
 
-### Terminal 5a - Testing Requirement 9 outputs
-# Check VO odometry is publishing
+## Terminal 5a - Testing Requirement 9 outputs
+## Check VO odometry is publishing
 ros2 topic echo /vo/odom --once
 
-# Check TF tree includes VO frames (vo_odom → vo_base_link → atlas/realsense)
+## Check TF tree includes VO frames (vo_odom → vo_base_link → atlas/realsense)
 ros2 run tf2_tools view_frames
 
-# View VO vs ground-truth comparison log
+## View VO vs ground-truth comparison log
 cat ~/ros2_ws/vo_comparison.log
 
-# View comparison CSV data
+## View comparison CSV data
 cat ~/ros2_ws/vo_comparison.csv
