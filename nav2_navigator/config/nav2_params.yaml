@@ -7,8 +7,8 @@ bt_navigator:
     cmd_vel_topic: /atlas/cmd_vel
     bt_loop_duration: 10
     default_server_timeout: 20
-    default_nav_to_pose_bt_xml: "/home/ntu-user/workspace/cognitive_groupwork/nav2_navigator/config/behavior_trees/navigate_to_pose.xml"
-    default_nav_through_poses_bt_xml: "/home/ntu-user/workspace/cognitive_groupwork/nav2_navigator/config/behavior_trees/navigate_to_pose.xml"
+    default_nav_to_pose_bt_xml: "/opt/ros/humble/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"
+    default_nav_through_poses_bt_xml: "/opt/ros/humble/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"
     navigators: ['navigate_to_pose', 'navigate_through_poses']
     navigate_to_pose:
       plugin: "nav2_bt_navigator/NavigateToPoseNavigator"
@@ -18,6 +18,7 @@ bt_navigator:
       - nav2_compute_path_to_pose_action_bt_node
       - nav2_compute_path_through_poses_action_bt_node
       - nav2_follow_path_action_bt_node
+      - nav2_rate_controller_bt_node
       - nav2_spin_action_bt_node
       - nav2_wait_action_bt_node
       - nav2_back_up_action_bt_node
