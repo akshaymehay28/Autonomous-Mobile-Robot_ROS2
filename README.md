@@ -78,10 +78,14 @@ ros2 launch ntu_robotsim visual_odometry.launch.py
 ## Terminal 4a - Teleop Control
 ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r /cmd_vel:=/atlas/cmd_vel
 
+## Terminal 5a - RViz Visualisation for VO
+source ~/ros2_ws/install/setup.bash
+rviz2 -d ~/ros2_ws/src/cognitive_groupwork/ntu_robotsim/config/visual_odometry.rviz
+
 ## Instructions:
 1. Launch Terminals 1a and 2a, wait for the robot to appear in Gazebo.
 2. Launch Terminal 3a — the RTAB-Map visualisation window will open showing the 3D map, odometry features, and loop closure panels.
-3. Launch Terminal 4a and drive the robot around the maze slowly.
+3. Launch Terminal 4a and drive the robot around the maze slowly and launch Terminal 5 for RViz.
 4. The RTAB-Map window shows real-time feature tracking, trajectory, and 3D point cloud.
 5. Terminal 3a prints VO vs ground-truth comparison every 2 seconds.
 
