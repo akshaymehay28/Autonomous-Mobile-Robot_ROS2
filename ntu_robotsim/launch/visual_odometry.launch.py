@@ -1,6 +1,5 @@
 """
-Visual Odometry Launch File
-Requirement 9: Visual Odometry
+Visual Odometry Launch File for Requirement 9
 """
 import os
 from launch import LaunchDescription
