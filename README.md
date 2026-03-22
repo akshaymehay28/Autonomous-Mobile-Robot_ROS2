@@ -21,9 +21,7 @@ ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r /cmd_vel:=/ma
 
 ## Terminal 6 - RViz Visualisation
 source ~/ros2_ws/install/setup.bash
-rviz2
-
-In RViz: set Fixed Frame to map, add Map on /projected_map, add MarkerArray on /occupied_cells_vis_array, add Image on /yolo/dbg_image.
+rviz2 -d ~/ros2_ws/src/cognitive_groupwork/ntu_robotsim/config/coursework_main.rviz
 
 ## Terminal 7 - Requirements 7 & 8: Landmark database and Object counting
 source ~/ros2_ws/install/setup.bash
