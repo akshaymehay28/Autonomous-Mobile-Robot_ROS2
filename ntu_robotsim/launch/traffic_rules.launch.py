@@ -61,12 +61,12 @@ def generate_launch_description():
             'status_topic': '/traffic_sign/status',
             'stop_duration': LaunchConfiguration('stop_duration'),
             'slow_speed_limit': 0.08,
-            'fast_speed_limit': 0.60,
+            'fast_speed_limit': 0.80,
             'default_speed_limit': 0.50,
-            'detection_timeout': 3.0,
+            'detection_timeout': 2.0,
             'min_confidence': 0.50,
             'min_box_width': 40.0,
-            'only_react_to_centered_signs': True,
+            'only_react_to_centered_signs': False,
             'center_tolerance_pixels': 160.0,
         }]
     )
