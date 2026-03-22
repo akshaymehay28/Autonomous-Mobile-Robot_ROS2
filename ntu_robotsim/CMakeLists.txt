@@ -18,6 +18,7 @@ install(PROGRAMS
   scripts/occupancy_grid_mapper.py
   scripts/traffic_sign_controller.py
   scripts/landmark_database.py
+  scripts/vo_comparison.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
