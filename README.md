@@ -14,7 +14,7 @@ ros2 launch ntu_robotsim occupancy_grid_mapping.launch.py
 ## Terminal 4 - Requirements 3 & 5: Object detection and Traffic rules
 source ~/ros2_ws/install/setup.bash
 ros2 launch ntu_robotsim traffic_rules.launch.py \
-    model:=/home/ntu-user/ros2_ws/src/cognitive_groupwork/custom_models/best.pt
+    model:=/home/ntu-user/ros2_ws/custom_models/best.pt
 
 ## Terminal 5 - Teleop Control
 ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r /cmd_vel:=/manual_cmd_vel
