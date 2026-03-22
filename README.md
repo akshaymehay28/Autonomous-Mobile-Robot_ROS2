@@ -51,7 +51,7 @@ cat ~/ros2_ws/landmark_database.yaml
 1. Launch Terminals 1–7 in order and wait for each to initialise before launching the next.
 2. Using teleop (Terminal 5), drive the robot near each landmark in order: orange, tree, vehicle, stop sign. This builds the occupancy map and populates the landmark database.
 3. Terminal 7 will log detected objects to object_log.log. Verify with: cat ~/ros2_ws/object_log.log
-4. Terminal 8 (Goal Publisher): launch after driving near landmarks — it will confirm each position is recorded with coordinates.
+4. Terminal 8 (Goal Publisher): launch. then driving near landmarks — it will confirm each position is recorded with coordinates.
 5. Once all landmarks are recorded, drive the robot back to the starting position.
 6. Terminal 9 (Autonomous Navigation): launch after all landmarks are detected and the robot is at start. The robot will automatically navigate to each landmark in sequence.
 
