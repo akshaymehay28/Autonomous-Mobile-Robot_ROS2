@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-Visual Odometry Comparison Node
-Requirement 9: Visual Odometry
-Compares VO output against ground-truth odometry and logs the error.
+Visual Odometry Comparison Node for Requirement 9
+Compares VO output against ground-truth odometry and logs any errors.
 """
 
 import rclpy
