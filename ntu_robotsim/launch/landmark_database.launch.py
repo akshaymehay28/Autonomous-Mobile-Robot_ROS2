@@ -1,15 +1,7 @@
 """
-Landmark Database Launch File
-COMP30271 Coursework - Requirement 7: Landmark Database
-
+Landmark Database Launch File for Requirement 7
 Launches YOLO object detection alongside the landmark database node.
-The landmark database listens for non-traffic-sign detections (oranges,
-trees, vehicles) and logs them with robot odometry to object_log.log.
-
-Launch AFTER the simulation and robot are running:
-    Terminal 1: ros2 launch ntu_robotsim cwmaze.launch.py
-    Terminal 2: ros2 launch ntu_robotsim single_robot_sim.launch.py
-    Terminal 3: ros2 launch ntu_robotsim landmark_database.launch.py model:=/path/to/best.pt
+The landmark database listens for oranges, trees, vehicles and logs them with robot odometry to object_log.log.
 """
 
 from launch import LaunchDescription
