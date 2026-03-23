@@ -1,7 +1,7 @@
 """
 Occupancy Grid Mapping Launch File (OctoMap-based)
-COMP30271 Coursework - Requirement 1: Basic Mapping
-Uses OctoMap server to build a 3D map and project it to 2D.
+Requirement 1: Basic Mapping
+
 """
 
 import os
