@@ -1,25 +1,6 @@
 """
-Object Detection Launch File
-==============================
-COMP30271 Cognitive Computing Coursework - Requirement 3: Object Detection
+Requirement 3: Object Detection
 
-Launches YOLO object detection using yolo_ros, following the same
-approach as Lab 5 Section 2.3.
-
-This launch file starts the YOLO detection node pointed at the
-coursework robot's RGB camera topic. It supports both pre-trained
-COCO weights (detects stop signs) and custom trained weights
-(detects all coursework classes: stop_sign, fast_sign, slow_sign,
-orange, vehicle, tree).
-
-Launch AFTER the simulation and robot are running:
-    Terminal 1: ros2 launch ntu_robotsim cwmaze.launch.py
-    Terminal 2: ros2 launch ntu_robotsim single_robot_sim.launch.py
-    Terminal 3: ros2 launch ntu_robotsim object_detection.launch.py
-
-To use a custom trained model instead of COCO:
-    ros2 launch ntu_robotsim object_detection.launch.py \
-        model:=$HOME/ros2_ws/custom_models/best.pt
 """
 
 import os
