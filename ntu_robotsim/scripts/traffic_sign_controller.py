@@ -1,14 +1,6 @@
 #!/usr/bin/env python3
 """
 Requirement 5: Traffic Rules
-
-This node sits between keyboard teleop and the robot cmd_vel topic.
-It listens to YOLO detections and modifies the commanded velocity so the
-robot reacts to traffic signs in simulation:
-
-- stop_sign -> full stop for a few seconds
-- slow_sign -> reduce forward speed
-- fast_sign -> increase forward speed
 """
 
 from typing import Optional, Tuple
