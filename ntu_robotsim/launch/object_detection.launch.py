@@ -14,9 +14,7 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
 
-    # ─────────────────────────────────────────────────────────────
-    # Launch Arguments
-    # ─────────────────────────────────────────────────────────────
+
     model_arg = DeclareLaunchArgument(
         'model',
         default_value='yolov8s.pt',
@@ -42,9 +40,7 @@ def generate_launch_description():
         description='Camera image topic from the robot'
     )
 
-    # ─────────────────────────────────────────────────────────────
-    # YOLO Detection Node (via yolo_bringup, same as Lab 5)
-    # ─────────────────────────────────────────────────────────────
+
     yolo_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             FindPackageShare('yolo_bringup'), '/launch/yolo.launch.py'
