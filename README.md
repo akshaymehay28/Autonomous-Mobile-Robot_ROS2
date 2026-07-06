@@ -1,101 +1,60 @@
-# NTU_COMP30271_CW_RobotSim
-NTU COMP30271 Robot Simulation for CW using ROS 2 Humble and Gazebo Fortress
+# Autonomous Mobile Robot - ROS 2 Navigation, Mapping and Perception
 
-## Terminal 1 - Simulation world
-ros2 launch ntu_robotsim cwmaze.launch.py
+An autonomous mobile robot built with ROS 2 Humble and simulated in Gazebo Fortress. The robot explores a maze environment, builds an occupancy grid map from point cloud data, detects and classifies objects with a custom-trained YOLO model, obeys traffic signs, records discovered landmarks in a database, and then autonomously navigates back to each landmark using Nav2.
 
-## Termnial 2 - Spawn robot
-ros2 launch ntu_robotsim single_robot_sim.launch.py
+## Capabilities
 
-## Terminal 3 - Requirement 1: Occupancy Grid Mapping
-source ~/ros2_ws/install/setup.bash
+**Occupancy grid mapping** - a custom mapping node (`occupancy_grid_mapper.py`) converts depth-camera point clouds and odometry into a live occupancy grid, published for RViz and used downstream by Nav2. OctoMap is integrated for 3D mapping support.
+
+**Object detection** - a YOLO model trained on custom classes for this environment (oranges, trees, vehicles, stop signs; weights in `custom_models/best.pt`) runs against the robot's camera feed and publishes detections.
+
+**Traffic rules** - `traffic_sign_controller.py` sits between the velocity command sources and the robot, monitoring YOLO detections and enforcing stop-sign behaviour by gating `cmd_vel`.
+
+**Landmark database** - `landmark_database.py` fuses YOLO detections with odometry to estimate world coordinates for each discovered object, de-duplicates repeat sightings, and persists the result to YAML and a human-readable log.
+
+**Autonomous navigation** - once landmarks are recorded, `goal_publisher` publishes each landmark position as a navigation goal and `nav2_navigator` drives the robot to every one in sequence using the Nav2 stack (`BasicNavigator`), reporting goal completion.
+
+**Visual odometry** - a separate RTAB-Map pipeline estimates the robot's trajectory from camera data alone and logs a live comparison against ground-truth odometry (`vo_comparison.py`).
+
+## Repository layout
+
+```
+ntu_robotsim/     simulation worlds, robot model, launch files, mapping /
+                  perception / traffic scripts
+goal_publisher/   landmark goal publishing and exploration nodes
+nav2_navigator/   Nav2 integration: navigator and map relay nodes
+custom_models/    trained YOLO weights (best.pt)
+octomap2/         OctoMap server and PCL support packages
+odom_to_tf_ros2/  odometry-to-TF broadcaster
+```
+
+## Running the simulation
+
+Requires ROS 2 Humble, Gazebo Fortress and a built colcon workspace. Launch in order, waiting for each to initialise:
+
+```bash
+ros2 launch ntu_robotsim cwmaze.launch.py              # simulation world
+ros2 launch ntu_robotsim single_robot_sim.launch.py    # spawn robot
 ros2 launch ntu_robotsim occupancy_grid_mapping.launch.py
-
-## Terminal 4 - Requirements 3 & 5: Object detection and Traffic rules
-source ~/ros2_ws/install/setup.bash
-ros2 launch ntu_robotsim traffic_rules.launch.py \
-    model:=/home/ntu-user/ros2_ws/custom_models/best.pt
-
-## Terminal 5 - Teleop Control
-ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r /cmd_vel:=/manual_cmd_vel
-
-## Terminal 6 - RViz Visualisation
-source ~/ros2_ws/install/setup.bash
-rviz2 -d ~/ros2_ws/src/cognitive_groupwork/ntu_robotsim/config/coursework_main.rviz
-
-## Terminal 7 - Requirements 7 & 8: Landmark database and Object counting
-source ~/ros2_ws/install/setup.bash
-ros2 run ntu_robotsim landmark_database.py --ros-args \
-    -p detections_topic:=/yolo/detections \
-    -p odom_topic:=/atlas/odom_ground_truth \
-    -p log_file:=object_log.log \
-    -p yaml_file:=landmark_database.yaml
-
-## Terminal 8 - Requirement 4: Goal Position Detection
-source ~/ros2_ws/install/setup.bash
+ros2 launch ntu_robotsim traffic_rules.launch.py model:=<path to best.pt>
+ros2 run ntu_robotsim landmark_database.py
 ros2 launch goal_publisher goal_publisher.launch.py
+ros2 launch nav2_navigator nav2_navigator.launch.py    # autonomous phase
+```
 
-## Terminal 9 - Requirement 6: Autonomous Navigation
-source ~/ros2_ws/install/setup.bash
-ros2 launch nav2_navigator nav2_navigator.launch.py
+Teleop for the exploration phase:
 
-## Terminal 10 - Testing requirement outputs
-### Requirement 5 — Traffic sign status
-ros2 topic echo /traffic_sign/status
-### Requirements 7 & 8 — Landmark database log
-cat ~/ros2_ws/object_log.log
-### Requirement 7 — YAML database
-cat ~/ros2_ws/landmark_database.yaml
+```bash
+ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r /cmd_vel:=/manual_cmd_vel
+```
 
-## Instructions:
-1. Launch Terminals 1–7 in order and wait for each to initialise before launching the next.
-2. Using teleop (Terminal 5), drive the robot near each landmark in order: orange, tree, vehicle, stop sign. This builds the occupancy map and populates the landmark database.
-3. Terminal 7 will log detected objects to object_log.log. Verify with: cat ~/ros2_ws/object_log.log
-4. Terminal 8 (Goal Publisher): launch. then driving near landmarks — it will confirm each position is recorded with coordinates.
-5. Once all landmarks are recorded, drive the robot back to the starting position.
-6. Terminal 9 (Autonomous Navigation): launch after all landmarks are detected and the robot is at start. The robot will automatically navigate to each landmark in sequence.
+For the visual odometry pipeline (run separately from the above):
 
-## Requirement 9: Visual Odometry (Separate from Requirements 1-8)
-
-### Do NOT run this alongside the Requirement 1-8 terminals.
-### Requirement 9 uses its own simulation session and its own TF frames.
-
-## Install RTABMAP-ROS
+```bash
 sudo apt install ros-humble-rtabmap-ros
-
-## Terminal 1a - Simulation world
-ros2 launch ntu_robotsim cwmaze.launch.py
-
-## Terminal 2a - Spawn robot
-ros2 launch ntu_robotsim single_robot_sim.launch.py
-
-## Terminal 3a - Visual Odometry (RTAB-Map)
-source ~/ros2_ws/install/setup.bash
 ros2 launch ntu_robotsim visual_odometry.launch.py
+```
 
-## Terminal 4a - Teleop Control
-ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r /cmd_vel:=/atlas/cmd_vel
+## Tech stack
 
-## Terminal 5a - RViz Visualisation for VO
-source ~/ros2_ws/install/setup.bash
-rviz2 -d ~/ros2_ws/src/cognitive_groupwork/ntu_robotsim/config/visual_odometry.rviz
-
-## Instructions:
-1. Launch Terminals 1a and 2a, wait for the robot to appear in Gazebo.
-2. Launch Terminal 3a — the RTAB-Map visualisation window will open showing the 3D map, odometry features, and loop closure panels.
-3. Launch Terminal 4a and drive the robot around the maze slowly and launch Terminal 5 for RViz.
-4. The RTAB-Map window shows real-time feature tracking, trajectory, and 3D point cloud.
-5. Terminal 3a prints VO vs ground-truth comparison every 2 seconds.
-
-## Terminal 5a - Testing Requirement 9 outputs
-## Check VO odometry is publishing
-ros2 topic echo /vo/odom --once
-
-## Check TF tree includes VO frames (vo_odom → vo_base_link → atlas/realsense)
-ros2 run tf2_tools view_frames
-
-## View VO vs ground-truth comparison log
-cat ~/ros2_ws/vo_comparison.log
-
-## View comparison CSV data
-cat ~/ros2_ws/vo_comparison.csv
+ROS 2 Humble, Gazebo Fortress, Nav2, YOLO, RTAB-Map, OctoMap, PCL, Python, C++, RViz
